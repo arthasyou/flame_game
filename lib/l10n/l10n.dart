@@ -7,8 +7,8 @@ class L10n {
     const Locale('zh', 'TW'),
   ];
 
-  static String getFlag(String code) {
-    print(code.toString());
+  static String getFlag(Locale locale) {
+    final code = locale.toString();
     switch (code) {
       case 'zh':
         return '🇨🇳';

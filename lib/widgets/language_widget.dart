@@ -4,29 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../l10n/l10n.dart';
 import '../provider/locale_provider.dart';
 
-// class LanguageWidget extends StatelessWidget {
-//   const LanguageWidget({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final locale = Localizations.localeOf(context);
-//     final flag = L10n.getFlag(locale.languageCode);
-
-//     return Center(
-//       child: CircleAvatar(
-//         backgroundColor: Colors.black,
-//         radius: 72,
-//         child: Text(
-//           flag,
-//           style: const TextStyle(fontSize: 80),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-class LanguagePicerWidget extends ConsumerWidget {
-  const LanguagePicerWidget({super.key});
+class LanguagePickerWidget extends ConsumerWidget {
+  const LanguagePickerWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +18,7 @@ class LanguagePicerWidget extends ConsumerWidget {
           color: Colors.black,
         ),
         items: L10n.all.map((locale) {
-          final flag = L10n.getFlag(locale.languageCode);
+          final flag = L10n.getFlag(locale);
           return DropdownMenuItem(
             value: locale,
             child: Center(

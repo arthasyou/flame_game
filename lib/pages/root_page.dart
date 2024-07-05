@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import '../routes/router.dart';
 import '../widgets/language_widget.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 @RoutePage()
 class RootPage extends StatelessWidget {
@@ -23,10 +24,10 @@ class RootPage extends StatelessWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Exchange'),
+            title: Text(AppLocalizations.of(context)!.app_name),
             centerTitle: true,
             actions: const [
-              LanguagePicerWidget(),
+              LanguagePickerWidget(),
               SizedBox(width: 12),
             ],
           ),

@@ -6,15 +6,18 @@ import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../provider/slot_machine_provider.dart';
+
 class SlotMachine extends FlameGame with TapDetector {
   final List<SpriteComponent> _sprites = []; // 精灵列表
   final List<RectangleComponent> _frames = []; // 精灵的框架列表
 
+  bool isSpinning = false;
   int _highlightedIndex = 0; // 当前高亮的精灵索引
   int targetIndex = 0; // 目标高亮的精灵索引
   late Timer _timer; // 定时器
-  bool isSpinning = false; // 是否在旋转
   final AudioPlayer _audioPlayer = AudioPlayer(); // 音频播放器
+  final SlotMachineProvider _provider; // Riverpod 容器
 
   // 图片路径列表
   final List<String> imagePaths = [
@@ -66,6 +69,8 @@ class SlotMachine extends FlameGame with TapDetector {
     0.15384615384615385,
     0.15384615384615385
   ];
+
+  SlotMachine(this._provider);
 
   @override
   Future<void> onLoad() async {
@@ -163,20 +168,22 @@ class SlotMachine extends FlameGame with TapDetector {
 
   // 停止旋转
   void stopSpinning() {
-    isSpinning = false;
+    // isSpinning = false; // 确保更新本地状态
+    _provider.setIsSpinning(false);
     _timer.stop();
   }
 
   // 开始旋转
   void startSpinning() async {
+    // isSpinning = true; // 确保更新本地状态
+    _provider.setIsSpinning(true);
+
     // 重置音频播放器的位置
     await _audioPlayer.seek(Duration.zero);
     _audioPlayer.play();
 
     final random = Random();
     targetIndex = random.nextInt(_numSprites);
-
-    isSpinning = true;
 
     final int gap = targetIndex - _highlightedIndex;
     final int additionalSteps =

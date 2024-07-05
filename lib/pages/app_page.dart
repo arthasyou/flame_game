@@ -12,7 +12,7 @@ class AppPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Exchange'),
         actions: const [
-          LanguagePicerWidget(),
+          LanguagePickerWidget(),
         ],
       ),
       body: Column(children: [

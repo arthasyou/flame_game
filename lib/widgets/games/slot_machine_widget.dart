@@ -3,12 +3,28 @@ import 'package:flame_game/games/slot_machine.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class SlotMachineWidget extends ConsumerWidget {
+import '../../provider/slot_machine_provider.dart';
+
+class SlotMachineWidget extends ConsumerStatefulWidget {
   const SlotMachineWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final game = SlotMachine();
+  SlotMachineWidgetState createState() => SlotMachineWidgetState();
+}
+
+class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
+  late SlotMachine game;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化游戏实例
+    game = SlotMachine(ref.read(slotMachineProvider));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = ref.watch(slotMachineProvider);
     return Stack(
       children: [
         Center(
@@ -20,14 +36,12 @@ class SlotMachineWidget extends ConsumerWidget {
           right: 0,
           child: Center(
             child: ElevatedButton(
-              onPressed: () {
-                if (game.isSpinning) {
-                  game.stopSpinning();
-                } else {
-                  game.startSpinning();
-                }
-              },
-              child: const Text('Start'),
+              onPressed: provider.isSpinning
+                  ? null // 当 isSpinning 为 true 时禁用按钮
+                  : () {
+                      game.startSpinning();
+                    },
+              child: const Text('Run'),
             ),
           ),
         ),

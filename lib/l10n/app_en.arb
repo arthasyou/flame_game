@@ -1,11 +1,11 @@
 {
+    "@@locale": "en",
     "language": "English",
     "@language": {
         "description": "The current Language"
     },
-
-    "app_name": "Exchange",
-    "@language": {
+    "app_name": "Slot Machine",
+    "@app_name": {
         "description": "The app Name"
     }
 }
