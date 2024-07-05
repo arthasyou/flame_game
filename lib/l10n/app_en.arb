@@ -1,0 +1,11 @@
+{
+    "language": "English",
+    "@language": {
+        "description": "The current Language"
+    },
+
+    "app_name": "Exchange",
+    "@language": {
+        "description": "The app Name"
+    }
+}
