@@ -31,7 +31,7 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
           child: GameWidget(game: game),
         ),
         Positioned(
-          bottom: 20,
+          bottom: 30,
           left: 0,
           right: 0,
           child: Center(

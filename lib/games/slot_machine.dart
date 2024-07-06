@@ -11,7 +11,12 @@ import '../provider/slot_machine_provider.dart';
 class SlotMachine extends FlameGame with TapDetector {
   final List<SpriteComponent> _sprites = []; // 精灵列表
   final List<RectangleComponent> _frames = []; // 精灵的框架列表
+  final double _iconSize = 40;
+  final double _spacing = 2;
+  final double _rectangleSpacing = 2;
 
+  late SpriteComponent _spin;
+  late SpriteComponent _backgroud;
   bool isSpinning = false;
   int _highlightedIndex = 0; // 当前高亮的精灵索引
   int targetIndex = 0; // 目标高亮的精灵索引
@@ -76,14 +81,25 @@ class SlotMachine extends FlameGame with TapDetector {
   Future<void> onLoad() async {
     _numSprites = imagePaths.length;
 
+    // 加载背景图
+    _backgroud = SpriteComponent()
+      ..sprite = await loadSprite('fruit/fruit_bg.png')
+      ..size = Vector2(size[0], 622);
+    add(_backgroud);
+    _spin = SpriteComponent()
+      ..sprite = await loadSprite('fruit/fruit_bg_2.png');
+
     // 加载精灵和框架
     for (int i = 0; i < _numSprites; i++) {
       final sprite = SpriteComponent()
         ..sprite = await loadSprite(imagePaths[i])
-        ..size = Vector2(50, 50);
+        ..size = Vector2(_iconSize, _iconSize);
 
       final frame = RectangleComponent(
-        size: Vector2(54, 54),
+        size: Vector2(
+          _iconSize + _rectangleSpacing,
+          _iconSize + _rectangleSpacing,
+        ),
         paint: Paint()
           ..color = Colors.transparent
           ..style = PaintingStyle.stroke
@@ -92,9 +108,16 @@ class SlotMachine extends FlameGame with TapDetector {
 
       _sprites.add(sprite);
       _frames.add(frame);
-      add(frame);
-      add(sprite);
     }
+
+    // 将背景图和转盘的精灵、框架添加到组中
+    final group = PositionComponent();
+    group.add(_spin);
+    for (int i = 0; i < _numSprites; i++) {
+      group.add(_frames[i]);
+      group.add(_sprites[i]);
+    }
+    add(group);
 
     // 设置精灵和框架的位置，并高亮第一个精灵
     _positionSprites();
@@ -118,7 +141,7 @@ class SlotMachine extends FlameGame with TapDetector {
 
   // 设置精灵和框架的位置
   void _positionSprites() {
-    const double spacing = 52.0;
+    final double spacing = _iconSize + _spacing;
     final int side = _numSprites ~/ 4;
 
     // 计算整个转盘的宽度
@@ -142,9 +165,14 @@ class SlotMachine extends FlameGame with TapDetector {
 
       // 将所有精灵和框架的中心对齐到游戏区域的中心，并且顶部有20像素的间距
       final centerX = (size.x - width) / 2;
-      const topOffset = 20.0;
+      const topOffset = 138.0;
       _sprites[i].position = Vector2(x + centerX, y + topOffset);
-      _frames[i].position = _sprites[i].position - Vector2(2, 2);
+      _frames[i].position = _sprites[i].position - Vector2(_spacing, _spacing);
+
+      // 设置背景图位置
+      _spin
+        ..size = Vector2(width, width)
+        ..position = Vector2(centerX, topOffset);
     }
   }
 
