@@ -4,4 +4,5 @@ A new Flutter project.
 
 ## Getting Started
 
-```flutter pub run build_runner watch```
+``` flutter pub run build_runner watch ```
+``` protoc --dart_out=lib/ protos/message.proto ```

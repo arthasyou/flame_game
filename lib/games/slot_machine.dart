@@ -7,19 +7,28 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../provider/slot_machine_provider.dart';
+import 'component/lable.dart';
 
 class SlotMachine extends FlameGame with TapDetector {
   final List<SpriteComponent> _sprites = []; // 精灵列表
   final List<RectangleComponent> _frames = []; // 精灵的框架列表
+  final List<LabeledSpriteComponent> _odds = []; // 赔率图片列表
+  final List<LabeledSpriteComponent> _oddsActived = []; // 赔率图片列表
+  final oddActiveGroup = PositionComponent();
   final double _iconSize = 40;
   final double _spacing = 2;
   final double _rectangleSpacing = 2;
+  final Vector2 _oddsSize = Vector2(40, 25);
 
   late SpriteComponent _spin;
   late SpriteComponent _backgroud;
   bool isSpinning = false;
   int _highlightedIndex = 0; // 当前高亮的精灵索引
-  int targetIndex = 0; // 目标高亮的精灵索引
+  int _targetIndex = 0; // 目标高亮的精灵索引
+
+  int _oddsIndex = 0;
+  int _targetOdds = 0;
+
   late Timer _timer; // 定时器
   final AudioPlayer _audioPlayer = AudioPlayer(); // 音频播放器
   final SlotMachineProvider _provider; // Riverpod 容器
@@ -54,6 +63,32 @@ class SlotMachine extends FlameGame with TapDetector {
 
   late int _numSprites; // 精灵数量
 
+  // 图片路径列表
+  final List<String> oddsImagePaths = [
+    'fruit/fruit_img_4.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_9.png',
+    'fruit/fruit_img_4.png',
+  ];
+
+  final List<String> oddsValues = [
+    '100',
+    '40',
+    '30',
+    '20',
+    '20',
+    '15',
+    '10',
+    '5',
+  ];
+
+  late int _numOdds; // 赔率数量
+  final int _numOddsActived = 6; // 赔率数量
+
   // 开始和结束的时间间隔
   final List<double> startTimeIntervals = [
     0.000000000001,
@@ -80,6 +115,7 @@ class SlotMachine extends FlameGame with TapDetector {
   @override
   Future<void> onLoad() async {
     _numSprites = imagePaths.length;
+    _numOdds = oddsImagePaths.length;
 
     // 加载背景图
     _backgroud = SpriteComponent()
@@ -122,6 +158,49 @@ class SlotMachine extends FlameGame with TapDetector {
     // 设置精灵和框架的位置，并高亮第一个精灵
     _positionSprites();
     _highlightSprite(0);
+
+    // 加载赔率
+    final oddGroup = PositionComponent();
+    for (int i = 0; i < _numOdds; i++) {
+      final sprite = await loadSprite(oddsImagePaths[i]);
+      final lable = (i == 0 || i == _numOdds - 1)
+          ? LabeledSpriteComponent(
+              sprite: sprite, label: oddsValues[i], size: _oddsSize)
+          : LabeledSpriteComponent(
+              sprite: sprite,
+              label: oddsValues[i],
+              size: _oddsSize,
+              textStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            );
+
+      _odds.add(lable);
+      oddGroup.add(lable);
+    }
+    oddGroup
+      ..x = 0
+      ..y = 487;
+    add(oddGroup);
+    _positionOdds(_odds);
+
+    // 加载活动赔率
+
+    for (int i = 0; i < _numOddsActived; i++) {
+      final sprite = await loadSprite('fruit/fruit_img_10.png');
+      final lable = LabeledSpriteComponent(
+          sprite: sprite, label: oddsValues[i + 1], size: _oddsSize)
+        ..visible = false;
+
+      _oddsActived.add(lable);
+      // oddActiveGroup.add(lable);
+    }
+    oddActiveGroup
+      ..x = 0
+      ..y = 487;
+    add(oddActiveGroup);
+    _positionOdds(_oddsActived);
 
     // 初始化定时器但不启动
     _timer = Timer(0.1, repeat: true, onTick: _rotateSprites);
@@ -176,10 +255,24 @@ class SlotMachine extends FlameGame with TapDetector {
     }
   }
 
+  // 设置精灵和框架的位置
+  void _positionOdds(List<LabeledSpriteComponent> odds) {
+    const double spacing = 2;
+    final totalWidth = odds.length * _oddsSize.x + (odds.length - 1) * spacing;
+
+    final startX = (size.x - totalWidth) / 2;
+
+    for (int i = 0; i < odds.length; i++) {
+      odds[i].x = startX + i * (_oddsSize.x + spacing);
+    }
+  }
+
   // 旋转精灵
   void _rotateSprites() {
     _highlightedIndex = (_highlightedIndex + 1) % _numSprites;
     _highlightSprite(_highlightedIndex);
+    _oddsIndex = (_oddsIndex - 1) % 3;
+    _hightightOdds(_oddsIndex);
   }
 
   // 高亮指定索引的精灵
@@ -194,11 +287,28 @@ class SlotMachine extends FlameGame with TapDetector {
     }
   }
 
+  void _hightightOdds(int index) {
+    for (int i = 0; i < 3; i++) {
+      if (i == index) {
+        if (!_oddsActived[i].isMounted) {
+          oddActiveGroup.add(_oddsActived[i]);
+          oddActiveGroup.add(_oddsActived[i + 3]);
+        }
+      } else {
+        if (_oddsActived[i].isMounted) {
+          oddActiveGroup.remove(_oddsActived[i]);
+          oddActiveGroup.remove(_oddsActived[i + 3]);
+        }
+      }
+    }
+  }
+
   // 停止旋转
   void stopSpinning() {
     // isSpinning = false; // 确保更新本地状态
     _provider.setIsSpinning(false);
     _timer.stop();
+    print(_oddsIndex);
   }
 
   // 开始旋转
@@ -211,9 +321,9 @@ class SlotMachine extends FlameGame with TapDetector {
     _audioPlayer.play();
 
     final random = Random();
-    targetIndex = random.nextInt(_numSprites);
+    _targetIndex = random.nextInt(_numSprites);
 
-    final int gap = targetIndex - _highlightedIndex;
+    final int gap = _targetIndex - _highlightedIndex;
     final int additionalSteps =
         (gap > 0 || gap > startTimeIntervals.length + endTimeIntervals.length)
             ? 3
