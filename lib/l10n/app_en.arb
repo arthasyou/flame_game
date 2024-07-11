@@ -7,5 +7,9 @@
     "app_name": "Slot Machine",
     "@app_name": {
         "description": "The app Name"
+    },
+    "go": "Go",
+    "@go": {
+        "description": "The GO button"
     }
 }

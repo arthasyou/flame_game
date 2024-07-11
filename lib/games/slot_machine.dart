@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame_game/games/utils/combination.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -14,11 +15,15 @@ class SlotMachine extends FlameGame with TapDetector {
   final List<RectangleComponent> _frames = []; // 精灵的框架列表
   final List<LabeledSpriteComponent> _odds = []; // 赔率图片列表
   final List<LabeledSpriteComponent> _oddsActived = []; // 赔率图片列表
+  final List<LabeledSpriteComponent> _bets = []; // 赔率图片列表
+  final int _betsLength = 8;
   final oddActiveGroup = PositionComponent();
+  final betGroup = PositionComponent();
   final double _iconSize = 40;
   final double _spacing = 2;
   final double _rectangleSpacing = 2;
-  final Vector2 _oddsSize = Vector2(40, 25);
+  final Vector2 _oddsSize = Vector2(45, 25);
+  final Vector2 _betSize = Vector2(45, 20);
 
   late SpriteComponent _spin;
   late SpriteComponent _backgroud;
@@ -85,6 +90,8 @@ class SlotMachine extends FlameGame with TapDetector {
     '10',
     '5',
   ];
+
+  final List<int> _betValues = [0, 0, 0, 0, 0, 0, 0, 0];
 
   late int _numOdds; // 赔率数量
   final int _numOddsActived = 6; // 赔率数量
@@ -190,17 +197,35 @@ class SlotMachine extends FlameGame with TapDetector {
     for (int i = 0; i < _numOddsActived; i++) {
       final sprite = await loadSprite('fruit/fruit_img_10.png');
       final lable = LabeledSpriteComponent(
-          sprite: sprite, label: oddsValues[i + 1], size: _oddsSize)
-        ..visible = false;
+          sprite: sprite, label: oddsValues[i + 1], size: _oddsSize);
 
       _oddsActived.add(lable);
-      // oddActiveGroup.add(lable);
     }
     oddActiveGroup
       ..x = 0
       ..y = 487;
     add(oddActiveGroup);
     _positionOdds(_oddsActived);
+
+    // 加载下注
+
+    // for (int i = 0; i < _betsLength; i++) {
+    //   final sprite = await loadSprite('fruit/fruit_img_8.png');
+    //   final lable = LabeledSpriteComponent(
+    //       sprite: sprite, label: _betValues[i].toString(), size: _betSize);
+
+    //   _bets.add(lable);
+    //   betGroup.add(lable);
+    // }
+
+    await populateGroupComponents(betGroup, _bets, _betsLength,
+        'fruit/fruit_img_8.png', _betValues, _betSize);
+
+    betGroup
+      ..x = 0
+      ..y = 520;
+    add(betGroup);
+    _positionOdds(_bets);
 
     // 初始化定时器但不启动
     _timer = Timer(0.1, repeat: true, onTick: _rotateSprites);
@@ -308,13 +333,15 @@ class SlotMachine extends FlameGame with TapDetector {
     // isSpinning = false; // 确保更新本地状态
     _provider.setIsSpinning(false);
     _timer.stop();
-    print(_oddsIndex);
+
+    // print(_oddsIndex);
   }
 
   // 开始旋转
   void startSpinning() async {
-    // isSpinning = true; // 确保更新本地状态
     _provider.setIsSpinning(true);
+
+    updateValues([1, 2, 3, 4, 5, 6, 7, 8]);
 
     // 重置音频播放器的位置
     await _audioPlayer.seek(Duration.zero);
@@ -397,5 +424,17 @@ class SlotMachine extends FlameGame with TapDetector {
     });
 
     _timer.start();
+  }
+
+  void updateValues(List<int> newValues) async {
+    // 更新 values
+    final values = newValues;
+
+    // 调用 populateGroupComponents 重新填充组件
+    await populateGroupComponents(betGroup, _bets, _betsLength,
+        'fruit/fruit_img_8.png', values, _betSize);
+
+    // 如果需要，重新设置组件的位置
+    _positionOdds(_bets);
   }
 }
