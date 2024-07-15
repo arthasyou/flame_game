@@ -6,12 +6,20 @@ class ImageButton extends StatefulWidget {
   final String? buttonText;
   final VoidCallback onTap;
   final bool isEnabled;
+  final double imageSizeX;
+  final double imageSizeY;
+  final double? containerSizeX;
+  final double? containerSizeY;
 
   const ImageButton({
     super.key,
     required this.normalImagePath,
     required this.pressedImagePath,
     required this.onTap,
+    required this.imageSizeX,
+    required this.imageSizeY,
+    this.containerSizeX,
+    this.containerSizeY,
     this.buttonText,
     this.isEnabled = true,
   });
@@ -60,56 +68,27 @@ class _ImageButtonState extends State<ImageButton> {
           // Background Image
           Image.asset(
             _isPressed ? widget.pressedImagePath : widget.normalImagePath,
-            width: 60,
-            height: 35,
-            fit: BoxFit.cover,
+            width: widget.imageSizeX,
+            height: widget.imageSizeY,
+            fit: BoxFit.fill,
           ),
           // Button Text
-          Container(
-            width: 75,
-            height: 44,
-            alignment: Alignment.topCenter,
-            child: widget.buttonText != null
-                ? Text(
-                    widget.buttonText!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
-          ),
+          if (widget.buttonText != null)
+            Container(
+              width: widget.containerSizeX!,
+              height: widget.containerSizeY!,
+              alignment: Alignment.topCenter,
+              child: Text(
+                widget.buttonText!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
         ],
       ),
-    );
-  }
-}
-
-class MyWidget extends StatelessWidget {
-  final bool isSpinning;
-  final VoidCallback startSpinning;
-
-  const MyWidget({
-    super.key,
-    required this.isSpinning,
-    required this.startSpinning,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ImageButton(
-      buttonText: 'Go',
-      onTap: () {
-        if (!isSpinning) {
-          startSpinning();
-        } else {
-          // Do nothing, button is disabled
-        }
-      },
-      pressedImagePath: 'assets/images/fruit/fruit_btn_bet_100.png',
-      normalImagePath: 'assets/images/fruit/fruit_btn_bet_10.png',
-      isEnabled: !isSpinning,
     );
   }
 }

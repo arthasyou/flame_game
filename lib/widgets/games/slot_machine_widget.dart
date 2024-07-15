@@ -1,10 +1,16 @@
 import 'package:flame/game.dart';
 import 'package:flame_game/games/slot_machine.dart';
+import 'package:flame_game/protos/message.pb.dart';
+import 'package:flame_game/widgets/components/image_lable.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../provider/slot_machine_provider.dart';
+import '../../services/message_service.dart';
+import '../../services/web_socket_service.dart';
+import '../components/bets.dart';
+import '../components/big_or_small.dart';
 import '../components/image_button.dart';
 import '../components/image_button_group.dart';
 
@@ -17,27 +23,63 @@ class SlotMachineWidget extends ConsumerStatefulWidget {
 
 class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
   late SlotMachine game;
+  late MessageService _messageService;
 
   @override
   void initState() {
     super.initState();
     // 初始化游戏实例
     game = SlotMachine(ref.read(slotMachineProvider));
+    _messageService = MessageService();
+    ref
+        .read(webSocketProvider)
+        .addListener(() => _messageService.onMessageReceived(ref));
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = ref.watch(slotMachineProvider);
+
     return Stack(
       children: [
         Center(
           child: GameWidget(game: game),
         ),
         Positioned(
-          bottom: 145,
-          right: 0,
+            top: 85,
+            left: (MediaQuery.of(context).size.width - 400 / 2),
+            child: ImageLable(
+              imagePath: 'assets/images/fruit/fruit_img_8.png',
+              sizeX: 100,
+              sizeY: 20,
+              text: provider.coin.toString(),
+            )),
+        Positioned(
+            top: 205,
+            left: (MediaQuery.of(context).size.width - 400 / 2),
+            child: TextButton(
+              onPressed: () {
+                _messageService.sendMessage(
+                    ref,
+                    1001,
+                    UserInfoResult(
+                      id: '1',
+                      icon: '1',
+                      name: 'abc',
+                      balance: 100,
+                    ));
+              },
+              child: const Text("test"),
+            )),
+        Positioned(
+          top: 438,
+          left: (MediaQuery.of(context).size.width / 2) + 134,
           child: ImageButton(
             buttonText: AppLocalizations.of(context)!.go,
+            imageSizeX: 60,
+            imageSizeY: 40,
+            containerSizeX: 60,
+            containerSizeY: 40,
             onTap: () {
               if (!provider.isSpinning) {
                 game.startSpinning();
@@ -50,10 +92,20 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
             isEnabled: !provider.isSpinning,
           ),
         ),
-        const Positioned(
-          bottom: 125,
-          right: 0,
-          child: ButtonGroup(),
+        Positioned(
+          top: 566,
+          left: ((MediaQuery.of(context).size.width - 430) / 2),
+          child: const ButtonGroup(),
+        ),
+        Positioned(
+          top: 438,
+          left: ((MediaQuery.of(context).size.width - 260) / 2),
+          child: const BigSmallWidget(),
+        ),
+        Positioned(
+          top: 520,
+          left: ((MediaQuery.of(context).size.width - 374) / 2),
+          child: const BetsWidget(),
         ),
       ],
     );

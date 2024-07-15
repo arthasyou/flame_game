@@ -1,18 +1,91 @@
 syntax = "proto3";
+option go_package = "gtlb.zhongzefun.com/goldgame/fruitserver/ftproto";
+package ftproto;
 
-message tos_101 {
-  string message = 1;
+// 包头6位 0～2 error_code 3~4 cmd 5~6 dataLength
+// proto放回结果 不需要code这个成功标记，如果errro_code 不为0表示错误，不解析proto
+// id表示玩家消息是不需要的，登入后服务端需要确定是哪个玩家，不能让前端来传玩家id
+// 不用浮点数都使用int
+
+// @tos_1001
+// 进入游戏 请求玩家信息
+message UserInfoArg {
+  string id = 1;
 }
 
-message toc_101 {
-  string message = 1;
+// @toc_1001
+// 进入游戏 请求玩家信息
+message UserInfoResult {
+  string id = 1;
+  string name = 2;
+  int32 balance = 3;
+  string icon = 4;
 }
 
-
-message tos_201 {
-  string message = 1;
+// @tos_2001
+// 玩水果游戏 请求
+message FruitPlayArg{ 
+  string id = 1;
+  repeated Bet fruit = 2; // index-> 0=苹果 7=bar 从右往左
 }
 
-message toc_201 {
-  string message = 1;
+// @toc_2001
+// 玩水果游戏 响应结果
+message FruitPlayResult{
+  // string id = 1; // 不需要
+  repeated uint32 lights = 1; // 亮灯位置 0=右边苹果 23=右边雪豹 顺时针
+  uint32 odds = 2; //赔率
+  repeated Bet part = 3; // 中奖结果（推送所有8个水果）
+  uint32 win = 4;
+  uint32 balance = 5;
 }
+
+// @tos_2002
+// 玩大小游戏 请求
+message BsPlayArg {
+  string id = 1;
+  Bet bs = 2; // index-> 0=小 1=大 （只有一种下注不是大就是小）
+}
+
+// @toc_2002
+// 玩大小游戏 响应结果
+message BsPlayResult {
+  // string id = 1;
+  uint32 result = 3; // 2-6 8-12
+  uint32 win = 4; // 赢分 
+  uint32 balance = 5; // 余额
+}
+
+// @tos_2003
+// 撤注 请求
+message CancelArg {
+  string id = 1;
+}
+
+// @toc_2003
+// 撤注 响应结果
+message CancelResult {
+  // string id = 1;
+  uint32 balance = 3; // 余额
+}
+
+// @tos_2004
+// 续压 请求
+message ContinuePlayArg {
+  string id = 1;
+}
+
+// @toc_2004
+// 续压 响应结果 这个可以使用2001的结果可以不用这个协议（虽然是成对的数据，但是前端可以解析不是对应的数据）
+message ContinuePlayResult {
+  // string id = 1;
+  uint32 balance = 3; // 余额
+  repeated Bet last = 4; // 上一局投注情况
+}
+
+// 
+message Bet {
+   uint32 index = 1; // 位置
+   uint32 amount = 2; // 投注金额/中奖分
+}
+

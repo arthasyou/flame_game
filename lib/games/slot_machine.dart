@@ -207,25 +207,14 @@ class SlotMachine extends FlameGame with TapDetector {
     add(oddActiveGroup);
     _positionOdds(_oddsActived);
 
-    // 加载下注
+    // await populateGroupComponents(betGroup, _bets, _betsLength,
+    //     'fruit/fruit_img_8.png', _betValues, _betSize);
 
-    // for (int i = 0; i < _betsLength; i++) {
-    //   final sprite = await loadSprite('fruit/fruit_img_8.png');
-    //   final lable = LabeledSpriteComponent(
-    //       sprite: sprite, label: _betValues[i].toString(), size: _betSize);
-
-    //   _bets.add(lable);
-    //   betGroup.add(lable);
-    // }
-
-    await populateGroupComponents(betGroup, _bets, _betsLength,
-        'fruit/fruit_img_8.png', _betValues, _betSize);
-
-    betGroup
-      ..x = 0
-      ..y = 520;
-    add(betGroup);
-    _positionOdds(_bets);
+    // betGroup
+    //   ..x = 0
+    //   ..y = 520;
+    // add(betGroup);
+    // _positionOdds(_bets);
 
     // 初始化定时器但不启动
     _timer = Timer(0.1, repeat: true, onTick: _rotateSprites);

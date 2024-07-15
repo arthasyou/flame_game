@@ -36,11 +36,12 @@ class SocketPageState extends ConsumerState<SocketPage> {
     final webSocketNotifier = ref.read(webSocketProvider);
     if (webSocketNotifier.messages.isNotEmpty) {
       // Get the last received message
-      Uint8List messageBytes = webSocketNotifier.messages.last;
-      String messageType = 'tos_101'; // 替换为实际的消息类型
+      WebSocketMessage messageBytes = webSocketNotifier.messages.last;
+      String messageType = 'ftproto.UserInfoArg'; // 替换为实际的消息类型
       try {
-        final message = _protoHandler.parseMessage(messageType, messageBytes);
-        print('Parsed message: $message');
+        final message =
+            _protoHandler.parseMessage(messageType, messageBytes.data);
+        // print('Parsed message: $message');
         // Handle the parsed message
       } catch (e) {
         print('Failed to parse message: $e');
@@ -50,11 +51,19 @@ class SocketPageState extends ConsumerState<SocketPage> {
 
   void _sendMessage() {
     final webSocketNotifier = ref.read(webSocketProvider);
-    // 创建tos_101消息实例并设置字段
-    final tos101Message = tos_101()..message = 'Hello, this is tos_101';
+
+    // 创建 tos_101 消息实例并设置字段
+    final tos101Message = UserInfoArg(id: '1');
+
     // 将消息序列化为字节数组
-    Uint8List messageBytes = Uint8List.fromList(tos101Message.writeToBuffer());
-    webSocketNotifier.sendMessage(messageBytes);
+    Uint8List messageBody = Uint8List.fromList(tos101Message.writeToBuffer());
+
+    // 创建包头，假设 error_code 为 0，cmd 为 1
+    int errorCode = 0;
+    int cmd = 1001;
+
+    // 发送消息
+    webSocketNotifier.sendMessage(messageBody, errorCode, cmd);
   }
 
   @override

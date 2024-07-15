@@ -9,13 +9,14 @@ class ProtoHandler {
   final Map<String, ProtoParser> _parsers = {};
 
   ProtoHandler() {
-    // 注册所有已知的消息类型解析器
+    // 注册所有已知的消息类型解析器=
     _registerAllParsers();
   }
 
   void _registerAllParsers() {
     for (var messageType in getAllMessageTypes()) {
-      _parsers[messageType().info_.qualifiedMessageName] = (Uint8List bytes) {
+      final qualifiedName = messageType().info_.qualifiedMessageName;
+      _parsers[qualifiedName] = (Uint8List bytes) {
         final message = messageType();
         message.mergeFromBuffer(bytes);
         return message;
