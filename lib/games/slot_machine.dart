@@ -21,7 +21,7 @@ class SlotMachine extends FlameGame with TapDetector {
   final betGroup = PositionComponent();
   final double _iconSize = 40;
   final double _spacing = 2;
-  final double _rectangleSpacing = 2;
+  final double _rectangleSpacing = 3;
   final Vector2 _oddsSize = Vector2(45, 25);
   final Vector2 _betSize = Vector2(45, 20);
 
@@ -31,11 +31,18 @@ class SlotMachine extends FlameGame with TapDetector {
   int _highlightedIndex = 0; // 当前高亮的精灵索引
   int _targetIndex = 0; // 目标高亮的精灵索引
 
+  int _sourceLight = 0;
+  int _targetLight = 0;
+
   int _oddsIndex = 0;
   int _targetOdds = 0;
 
+  List<int> _existLight = [];
+
   late Timer _timer; // 定时器
   final AudioPlayer _audioPlayer = AudioPlayer(); // 音频播放器
+  final AudioPlayer _biu = AudioPlayer();
+  final AudioPlayer _papapa = AudioPlayer();
   final SlotMachineProvider _provider; // Riverpod 容器
 
   // 图片路径列表
@@ -91,8 +98,6 @@ class SlotMachine extends FlameGame with TapDetector {
     '5',
   ];
 
-  final List<int> _betValues = [0, 0, 0, 0, 0, 0, 0, 0];
-
   late int _numOdds; // 赔率数量
   final int _numOddsActived = 6; // 赔率数量
 
@@ -146,7 +151,7 @@ class SlotMachine extends FlameGame with TapDetector {
         paint: Paint()
           ..color = Colors.transparent
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
+          ..strokeWidth = 3,
       );
 
       _sprites.add(sprite);
@@ -222,6 +227,8 @@ class SlotMachine extends FlameGame with TapDetector {
 
     // 加载音频资源
     await _audioPlayer.setAsset('assets/audio/run_light.mp3');
+    await _biu.setAsset('assets/audio/biubiubiu.mp3');
+    await _papapa.setAsset('assets/audio/papapa.mp3');
   }
 
   @override
@@ -285,19 +292,40 @@ class SlotMachine extends FlameGame with TapDetector {
   void _rotateSprites() {
     _highlightedIndex = (_highlightedIndex + 1) % _numSprites;
     _highlightSprite(_highlightedIndex);
+    // _highlightContinued(_highlightedIndex);
     _oddsIndex = (_oddsIndex - 1) % 3;
     _hightightOdds(_oddsIndex);
+  }
+
+  void _rotateLight() {
+    _highlightedIndex = (_highlightedIndex + 1) % _numSprites;
+    _highlightContinued(_highlightedIndex);
   }
 
   // 高亮指定索引的精灵
   void _highlightSprite(int index) {
     for (int i = 0; i < _sprites.length; i++) {
-      _sprites[i].paint = Paint()
-        ..color = i == index ? Colors.white : Colors.grey;
-      _frames[i].paint = Paint()
-        ..color = i == index ? Colors.yellow : Colors.transparent
+      // final paint = Paint()..color = i == index ? Colors.white : Colors.grey;
+      // _sprites[i].paint = paint;
+
+      final framePaint = Paint()
+        ..color = i == index ? Colors.white : Colors.transparent
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
+        ..strokeWidth = 3;
+      _frames[i].paint = framePaint;
+    }
+  }
+
+  void _highlightContinued(int index) {
+    // print("existLight: $_existLight");
+    for (int i = 0; i < _sprites.length; i++) {
+      final framePaint = Paint()
+        ..color = (_existLight.contains(i) || i == index)
+            ? Colors.white
+            : Colors.transparent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      _frames[i].paint = framePaint;
     }
   }
 
@@ -320,24 +348,117 @@ class SlotMachine extends FlameGame with TapDetector {
   // 停止旋转
   void stopSpinning() {
     // isSpinning = false; // 确保更新本地状态
+    // _provider.setIsSpinning(false);
+    // _timer.stop();
+    _targetLight = _targetIndex;
+    mulSpinning();
+    // startSpinning();
+  }
+
+  void mulSpinning() {
+    List<int> lights = List.from(_provider.lights);
+    int tempLight = lights.removeAt(0);
+    _existLight.add(tempLight);
+
+    _sourceLight = _targetLight;
+    _targetLight = lights[0];
+    int currentStep = 0;
+    int finalSteps = 0;
+    int gap = _targetLight - _sourceLight;
+    finalSteps = gap < 0 ? gap + imagePaths.length : gap;
+    double delay = 0.1;
+
+    void repeatSpin() {
+      _timer.stop();
+      _timer = Timer(delay, repeat: true, onTick: () {
+        _rotateLight();
+        currentStep++;
+
+        if (currentStep < finalSteps) {
+          delay = 0.02;
+
+          repeatSpin();
+        } else {
+          delay = 0.6;
+          tempLight = lights.removeAt(0);
+          _existLight.add(tempLight);
+
+          if (lights.isEmpty) {
+            _audioPa();
+            _endSpin();
+          } else {
+            _audioBiu();
+            _sourceLight = _targetLight;
+            _targetLight = lights[0];
+            gap = _targetLight - _sourceLight;
+            finalSteps = gap < 0 ? gap + imagePaths.length : gap;
+            currentStep = 0;
+            repeatSpin();
+          }
+        }
+      });
+      _timer.start();
+    }
+
+    _timer.stop();
+    _timer = Timer(0.6, repeat: true, onTick: repeatSpin);
+    _timer.start();
+
+    _audioBiu();
+  }
+
+  // void _spinLight() async {
+  //   print("gigigighggi");
+  //   int currentStep = 0;
+  //   int gap = _targetLight - _sourceLight;
+  //   int finalSteps = gap < 0 ? gap + imagePaths.length : gap;
+
+  //   void updateMulSpin() {
+  //     _timer.stop();
+  //     _timer = Timer(0.1, repeat: true, onTick: () {
+  //       _rotateLight();
+  //       currentStep++;
+  //       if (currentStep >= finalSteps) {
+  //         return;
+  //       } else {
+  //         updateMulSpin();
+  //       }
+  //     });
+  //     _timer.start();
+  //   }
+
+  //   _timer.stop();
+  //   _timer = Timer(0.2, repeat: true, onTick: updateMulSpin);
+  //   _timer.start();
+  // }
+
+  void _audioBiu() async {
+    await _biu.seek(Duration.zero);
+    _biu.play();
+  }
+
+  void _audioPa() async {
+    await _papapa.seek(Duration.zero);
+    _papapa.play();
+  }
+
+  void _endSpin() {
+    print("end");
     _provider.setIsSpinning(false);
     _timer.stop();
-
-    // print(_oddsIndex);
   }
 
   // 开始旋转
   void startSpinning() async {
-    _provider.setIsSpinning(true);
-
-    updateValues([1, 2, 3, 4, 5, 6, 7, 8]);
+    // _provider.setIsSpinning(true);
+    // _provider.setShouldStartSpinning(false); // 重置状态
+    _existLight = [];
 
     // 重置音频播放器的位置
     await _audioPlayer.seek(Duration.zero);
     _audioPlayer.play();
 
-    final random = Random();
-    _targetIndex = random.nextInt(_numSprites);
+    _targetIndex = _provider.lights[0];
 
     final int gap = _targetIndex - _highlightedIndex;
     final int additionalSteps =

@@ -20,7 +20,9 @@ class WebSocketMessage {
 
 class WebSocketNotifier extends ChangeNotifier {
   final WebSocketChannel _channel = WebSocketChannel.connect(
-    Uri.parse('ws://127.0.0.1:8080'), // 这里你可以替换成你自己的 WebSocket 地址
+    // Uri.parse(
+    //     'wss://wap-v101-gtmservice.rosetts.com/ws/fruit?session_id=6671446771c1d0000b0137e3'),
+    Uri.parse('ws://127.0.0.1:8080'),
   );
 
   final List<WebSocketMessage> _messages = [];

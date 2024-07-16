@@ -34,11 +34,29 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
     ref
         .read(webSocketProvider)
         .addListener(() => _messageService.onMessageReceived(ref));
+    _messageService.sendMessage(ref, 1001, UserInfoArg());
   }
+
+  // void _handleSpinning(BuildContext context, SlotMachineProvider provider) {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (provider.shouldStartSpinning) {
+  //       game.startSpinning();
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     final provider = ref.watch(slotMachineProvider);
+
+    // 使用 SchedulerBinding 来确保在当前帧完成后再处理 shouldStartSpinning
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (provider.shouldStartSpinning) {
+        provider.setShouldStartSpinning(false); // 重置状态
+        provider.setIsSpinning(true);
+        game.startSpinning();
+      }
+    });
 
     return Stack(
       children: [
@@ -63,7 +81,7 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
                     ref,
                     1001,
                     UserInfoResult(
-                      id: '1',
+                      userId: 1,
                       icon: '1',
                       name: 'abc',
                       balance: 100,
@@ -81,11 +99,9 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
             containerSizeX: 60,
             containerSizeY: 40,
             onTap: () {
-              if (!provider.isSpinning) {
-                game.startSpinning();
-              } else {
-                //button disable
-              }
+              // game.startSpinning();
+              _messageService.sendMessage(
+                  ref, 2001, FruitPlayArg(flag: '1', fruits: provider.bets));
             },
             pressedImagePath: 'assets/images/fruit/fruit_btn_bet_100.png',
             normalImagePath: 'assets/images/fruit/fruit_btn_bet_10.png',

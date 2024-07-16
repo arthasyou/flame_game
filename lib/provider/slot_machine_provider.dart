@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -17,6 +19,7 @@ class SlotMachineProvider extends ChangeNotifier {
 
   bool _isSpinning = false;
   bool get isSpinning => _isSpinning;
+  bool shouldStartSpinning = false;
 
   int _coin = 0;
   int get coin => _coin;
@@ -25,9 +28,18 @@ class SlotMachineProvider extends ChangeNotifier {
   int get bigOrSmallBet => _bigOrSmallBet;
 
   List<Bet> _bets = List.generate(8, (index) => Bet(index: index, amount: 0));
+  List<Bet> get bets => _bets;
+
+  List<int> _lights = [];
+  List<int> get lights => _lights;
 
   void setIsSpinning(bool isSpinning) {
     _isSpinning = isSpinning;
+    notifyListeners();
+  }
+
+  void setShouldStartSpinning(bool value) {
+    shouldStartSpinning = value;
     notifyListeners();
   }
 
@@ -67,6 +79,11 @@ class SlotMachineProvider extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  void setLights(List<int> lights) {
+    _lights = lights;
+    // notifyListeners();
   }
 }
 

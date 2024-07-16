@@ -53,7 +53,7 @@ class SocketPageState extends ConsumerState<SocketPage> {
     final webSocketNotifier = ref.read(webSocketProvider);
 
     // 创建 tos_101 消息实例并设置字段
-    final tos101Message = UserInfoArg(id: '1');
+    final tos101Message = UserInfoArg();
 
     // 将消息序列化为字节数组
     Uint8List messageBody = Uint8List.fromList(tos101Message.writeToBuffer());
