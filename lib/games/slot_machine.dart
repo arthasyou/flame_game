@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
@@ -443,7 +441,6 @@ class SlotMachine extends FlameGame with TapDetector {
   }
 
   void _endSpin() {
-    print("end");
     _provider.setIsSpinning(false);
     _timer.stop();
   }
