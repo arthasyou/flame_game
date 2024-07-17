@@ -2,6 +2,8 @@ import 'package:flame/game.dart';
 import 'package:flame_game/games/slot_machine.dart';
 import 'package:flame_game/protos/message.pb.dart';
 import 'package:flame_game/widgets/components/image_lable.dart';
+import 'package:flame_game/widgets/components/reward_group.dart';
+import 'package:flame_game/widgets/components/switch_group.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -37,14 +39,6 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
     _messageService.sendMessage(ref, 1001, UserInfoArg());
   }
 
-  // void _handleSpinning(BuildContext context, SlotMachineProvider provider) {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     if (provider.shouldStartSpinning) {
-  //       game.startSpinning();
-  //     }
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     final provider = ref.watch(slotMachineProvider);
@@ -65,30 +59,20 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
         ),
         Positioned(
             top: 85,
-            left: (MediaQuery.of(context).size.width - 400 / 2),
+            left: (MediaQuery.of(context).size.width + 80) / 2,
             child: ImageLable(
               imagePath: 'assets/images/fruit/fruit_img_8.png',
-              sizeX: 100,
+              sizeX: 150,
               sizeY: 20,
               text: provider.coin.toString(),
             )),
+        // 奖励
         Positioned(
-            top: 205,
-            left: (MediaQuery.of(context).size.width - 400 / 2),
-            child: TextButton(
-              onPressed: () {
-                _messageService.sendMessage(
-                    ref,
-                    1001,
-                    UserInfoResult(
-                      userId: 1,
-                      icon: '1',
-                      name: 'abc',
-                      balance: 100,
-                    ));
-              },
-              child: const Text("test"),
-            )),
+          top: 190,
+          left: (MediaQuery.of(context).size.width - 190) / 2,
+          child: const RewardWidget(),
+        ),
+        // 开始按钮
         Positioned(
           top: 438,
           left: (MediaQuery.of(context).size.width / 2) + 134,
@@ -99,7 +83,6 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
             containerSizeX: 60,
             containerSizeY: 40,
             onTap: () {
-              // game.startSpinning();
               _messageService.sendMessage(
                   ref, 2001, FruitPlayArg(flag: '1', fruits: provider.bets));
             },
@@ -108,14 +91,21 @@ class SlotMachineWidgetState extends ConsumerState<SlotMachineWidget> {
             isEnabled: !provider.isSpinning,
           ),
         ),
+        // 切换按钮
+        Positioned(
+          top: 438,
+          left: (MediaQuery.of(context).size.width / 2) - 170,
+          child: const SwitchWidget(),
+        ),
         Positioned(
           top: 566,
           left: ((MediaQuery.of(context).size.width - 430) / 2),
           child: const ButtonGroup(),
         ),
+        // 赌大小按钮
         Positioned(
           top: 438,
-          left: ((MediaQuery.of(context).size.width - 260) / 2),
+          left: ((MediaQuery.of(context).size.width - 220) / 2),
           child: const BigSmallWidget(),
         ),
         Positioned(

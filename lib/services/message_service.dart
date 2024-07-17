@@ -12,7 +12,16 @@ class MessageService {
   final ProtoHandler _protoHandler = ProtoHandler();
   final MessageHandler _messageHandler = MessageHandler();
 
-  MessageService();
+  // Private constructor
+  MessageService._internal();
+
+  // Singleton instance
+  static final MessageService _instance = MessageService._internal();
+
+  // Factory constructor
+  factory MessageService() {
+    return _instance;
+  }
 
   void onMessageReceived(WidgetRef ref) {
     final webSocketNotifier = ref.read(webSocketProvider);
@@ -71,12 +80,8 @@ class MessageHandler {
     SlotMachineProvider provider,
   ) {
     provider.setLights([23, 8, 19, 4, 22]);
-    // provider.setShouldStartSpinning(true);
     provider.setCoin(500);
-    // print(message.lights);
-    // provider.setLights(message.lights);
     provider.setShouldStartSpinning(true);
-    // provider.setCoin(message.balance);
   }
 
   void _handleBsPlayResult(BsPlayResult message, SlotMachineProvider provider) {

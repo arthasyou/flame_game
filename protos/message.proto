@@ -41,8 +41,8 @@ message FruitPlayResult{
 // @tos_2002
 // 玩大小游戏 请求
 message BsPlayArg {
-  string id = 1;
-  Bet bs = 2; // index-> 0=小 1=大 （只有一种下注不是大就是小）
+  uint32 index = 1;//index-> 0=小 1=大; （只有一种下注不是大就是小
+  uint32 amount = 2; //  ）
 }
 
 // @toc_2002
